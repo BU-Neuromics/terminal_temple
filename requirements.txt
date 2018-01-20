@@ -1,0 +1,3 @@
+fabulous
+docopt
+pillow

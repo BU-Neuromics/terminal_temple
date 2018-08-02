@@ -425,13 +425,14 @@ class match(Puzzle):
             print('Well done, putter of things into their correct containers.')
             print('Your next code is {}'.format(yellow(self.answer)))
         else :
-            print('The five containers in this directory have had their contents dumped '
-                        'aaaaaaalllllllllll over:\n')
+            print('The five containers in this directory have had their contents'
+                  'dumped aaaaaaalllllllllll over:\n')
             words = list(self.pairs.values())+[self.herring]
             print(' '.join(str(magenta(_)) for _ in words))
-            print('\nPut them back in their correct containers to solve the puzzle.\n')
-            print('Oh yeah, and you might notice there is one extra word. No idea '
-                        'where that one came from.\n')
+            print('\nPut them back in their correct containers to solve the '
+                  'puzzle.\n',
+                  'Oh yeah, and you might notice there is one extra word. No '
+                  'idea where that one came from.\n')
             print('Progress:')
             for k,v in self.pairs.items() :
                 with open(os.path.join(self.path,k)) as f :

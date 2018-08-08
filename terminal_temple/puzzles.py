@@ -1,18 +1,28 @@
 import base64
-from collections import OrderedDict
-
+from collections import OrderedDict, defaultdict
 from fabulous.color import bold, green, red, yellow, magenta
-
 import inflect
-
 import getpass
-
+import hashlib
+import networkx as nx
+from networkx.algorithms.dag import ancestors
+from networkx.algorithms.traversal.depth_first_search import dfs_tree
+import numpy
 import os
+import pathlib
 import pkg_resources
 import random
 import stat
 import string
 import sys
+
+# this is how random.py does it
+def str_to_int(a) :
+    a = a.encode()
+    a += hashlib.sha512(a).digest()
+    a = int.from_bytes(a, 'big')
+    a = a%(2**32-1)
+    return a
 
 class PuzzleMaster(object) :
     def __init__(self) :
@@ -27,7 +37,8 @@ class PuzzleMaster(object) :
     def unlock(self,key,answer=None) :
 
         # set the seed and generate the list of answers
-        random.seed(getpass.getuser()+key)
+        seed = numpy.random.RandomState(str_to_int(getpass.getuser()+key))
+        random.seed(seed)
         answers = [hex(random.randint(0x10000,0x100000))[2:] for _ in range(len(self.puzzles))]
 
         if answer is not None :
@@ -64,7 +75,9 @@ class Puzzle(object) :
         self.index = index
 
         # set the seed and generate the answer for this puzzle
-        random.seed(getpass.getuser()+self.key)
+        #self.seed = numpy.random.RandomState(str_to_int(getpass.getuser()+self.key))
+        #random.seed(self.seed)
+        random.seed(str_to_int(getpass.getuser()+self.key))
         self.answer = [hex(random.randint(0x10000,0x100000))[2:] for _ in range(index+1)][-1]
         self.init()
     def init(self,*args):
@@ -333,16 +346,87 @@ class crossed_streams(Puzzle):
 
 class find_your_pet(Puzzle):
     def init(self) :
-        pass
+
+        fn = pkg_resources.resource_filename('terminal_temple','data/animuls.fasta')
+        with open(fn,'rt') as f:
+            pets = []
+            curr_pet = [None,'']
+            for r in f :
+                if r.startswith('>') :
+                    if curr_pet[0] :
+                        pets.append(curr_pet)
+                    curr_pet = [r[1:].strip(),'']
+                else :
+                    curr_pet[1] += r
+        self.pets = pets
+        fn = pkg_resources.resource_filename('terminal_temple','data/locations.txt')
+        with open(fn,'rt') as f :
+            locs = [_.strip() for _ in f.readlines()]
+        # let's say on average 3 animuls per location?
+        num_locs = int(len(pets)/3)
+        pet_locs = random.choices(range(num_locs),k=len(pets))
+        self.locs = locs = random.choices(locs,k=num_locs)
+        path_tree = nx.random_tree(num_locs,seed=str_to_int(getpass.getuser()+self.key))
+        # create directories and put pets in them based on tree
+        self.root = random.choice(range(num_locs))
+        path_tree = dfs_tree(path_tree,self.root)
+        for node in path_tree.nodes :
+            path = nx.shortest_path(path_tree,source=self.root,target=node)
+            # create the directory if necessary
+            p = pathlib.Path(*[locs[_] for _ in path])
+            p.mkdir(exist_ok=True)
+            # create text files with the pets in them based on the path leaf
+            leaf = path[-1]
+            leaf_pet_locs = [i for i,x in enumerate(pet_locs) if x==leaf]
+            for leaf_pet in leaf_pet_locs :
+                pet_name, pet_art = pets[leaf_pet]
+                with open(p.joinpath('{}.txt'.format(pet_name)),'wt') as f :
+                    f.write(pet_art)
+        self.pet_id = random.choice(range(len(pets)))
+        self.pet_name, self.pet_pic = self.pets[self.pet_id]
+
+        self.dusty_pic = ''
+        for i in range(len(self.pet_pic)) :
+            if random.random() < 12/len(self.pet_pic) :
+                self.dusty_pic += '.'
+            else :
+                self.dusty_pic += self.pet_pic[i]
+
     def run(self,*args):
-        pass
+        if self.solved() :
+            print('You found your pet {}!'.format(self.pet_name))
+            print('With gratitude, he/she/they give you the next code: {}'.format(yellow(self.answer)))
+        else :
+            if os.path.exists('home.txt') :
+                with open('home.txt') as f :
+                    home = f.read().strip()
+                if home == self.dusty_pic.strip() :
+                    print("Wait, that's not your pet! It looks exactly like that dusty old")
+                    print("picture you are using to search for him/her/them. You'll have to")
+                    print("just get out there and find that ****ing {}!".format(self.pet_name))
+                else :
+                    print("Noooooo, that doesn't look like your beloved {}, keep searching!".format(self.pet_name))
+
+            print(bold(red('LOST:')))
+            print(self.dusty_pic)
+            print()
+            print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(self.pet_name,self.locs[self.root]))
+            print('He/she/they/other preferred pronouns is certainly off on an adventure')
+            print('with a very large number of other woke animules. But, surely, your')
+            print('beloved {} would like you to go find them and *mv* them back to'.format(self.pet_name))
+            print('*home.txt*')
     def solved(self):
-        return False
+        if not os.path.exists('home.txt') :
+            return False
+        with open('home.txt') as f :
+            home = f.read().strip()
+        return home == self.pet_pic.strip()
 
 class dream(Puzzle):
     def init(self) :
         # read in the quote
-        with open(pkg_resources.resource_filename('terminal_temple','data/mlk.txt'),'rt') as f :
+        fn = pkg_resources.resource_filename('terminal_temple','data/mlk.txt')
+        with open(fn,'rt') as f :
             self.text = f.read()
         chars = sorted(list(set(self.text.lower()).intersection(string.ascii_lowercase)))
         repl_chars = random.sample(string.ascii_uppercase,len(chars))

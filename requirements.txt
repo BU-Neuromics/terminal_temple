@@ -2,4 +2,4 @@ fabulous
 docopt
 pillow
 inflect
-inflect
+setuptools

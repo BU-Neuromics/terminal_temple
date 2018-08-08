@@ -8,8 +8,10 @@ import inflect
 import getpass
 
 import os
+import pkg_resources
 import random
 import stat
+import string
 import sys
 
 class PuzzleMaster(object) :
@@ -336,6 +338,47 @@ class find_your_pet(Puzzle):
         pass
     def solved(self):
         return False
+
+class dream(Puzzle):
+    def init(self) :
+        # read in the quote
+        with open(pkg_resources.resource_filename('terminal_temple','data/mlk.txt'),'rt') as f :
+            self.text = f.read()
+        chars = sorted(list(set(self.text.lower()).intersection(string.ascii_lowercase)))
+        repl_chars = random.sample(string.ascii_uppercase,len(chars))
+        self.crypto_map = {k:l for l,k in zip(chars,repl_chars)}
+    def get_envs(self):
+        # print out any current env vars defined
+        envs = {}
+        for repl in self.crypto_map :
+            env_val = os.environ.get(repl)
+            if env_val :
+                envs[repl] = env_val
+        return envs
+
+    def env_repl(self):
+        envs = self.get_envs()
+        # substitute based on the vars from above
+        crypto_text = self.text.lower()
+        for repl, char in self.crypto_map.items() :
+            crypto_text = crypto_text.replace(char,repl)
+            # now substitue back
+            if repl in envs :
+                crypto_text = crypto_text.replace(repl,envs[repl])
+        return crypto_text
+    def run(self):
+        crypto_text = self.env_repl()
+        if self.solved() :
+            print(self.text)
+            print('I have a dream.')
+            print('It involves the code {}'.format(yellow(self.answer)))
+        else :
+            envs = self.get_envs()
+            for repl,v in sorted(envs.items()) :
+                print('{}={}'.format(repl,v))
+            print(crypto_text)
+    def solved(self) :
+        return self.env_repl().lower() == self.text.lower()
 
 class template(Puzzle):
     def init(self) :

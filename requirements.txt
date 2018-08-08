@@ -2,3 +2,4 @@ fabulous
 docopt
 pillow
 inflect
+inflect

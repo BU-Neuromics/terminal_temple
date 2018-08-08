@@ -118,6 +118,7 @@ def main() :
     # order of puzzles
     puzzle_order = [
         unlock,
+        dream,
         file_puzzle,
         yay_math,
         reorder,
@@ -147,6 +148,8 @@ def main() :
             path = args['<path>']
             key = args['<key>']
             index = args['<index>']
+            if not index :
+                index = 0
 
         # unlock is a special case
         if puzzle_name == 'unlock' :

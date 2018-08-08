@@ -369,14 +369,18 @@ class dream(Puzzle):
     def run(self):
         crypto_text = self.env_repl()
         if self.solved() :
-            print(self.text)
+            print(bold(magenta(self.text)))
             print('I have a dream.')
             print('It involves the code {}'.format(yellow(self.answer)))
         else :
             envs = self.get_envs()
-            for repl,v in sorted(envs.items()) :
-                print('{}={}'.format(repl,v))
-            print(crypto_text)
+            envs_str = []
+            for i, (repl, v) in enumerate(sorted(envs.items())) :
+                envs_str.append('{}={}'.format(repl,v))
+                if i%5 == 4 :
+                    envs_str.append('\n')
+            print('  '+'  '.join(envs_str))
+            print(red(crypto_text))
     def solved(self) :
         return self.env_repl().lower() == self.text.lower()
 

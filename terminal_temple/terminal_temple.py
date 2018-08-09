@@ -93,12 +93,12 @@ def main() :
     # order of puzzles
     puzzle_order = [
         unlock,
-        dream,
         file_puzzle,
         yay_math,
         reorder,
         match,
         find_your_pet,
+        dream,
         tiles,
     ]
     for puz in puzzle_order :

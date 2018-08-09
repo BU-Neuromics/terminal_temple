@@ -1,4 +1,4 @@
-from itertools import product
+from itertools import product, cycle
 from fabulous import text
 from fabulous.color import *
 from fabulous.utils import TerminalInfo
@@ -49,9 +49,11 @@ def rect(x1,y1,x2,y2,color) :
         write(bg256(color,' '))
 
 def type_text(text,speed=0.03) :
+    variance = 1
     for c in str(text) :
         write(c)
-        sleep(speed)
+        jitter_speed = speed*((1-variance/2)+random.random()*variance)**2
+        sleep(jitter_speed)
 
 def banner() :
     voffset = 4

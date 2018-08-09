@@ -28,12 +28,14 @@ from fabulous import debug, utils, image
 from fabulous.color import bold, green, red, yellow, magenta
 
 import math
+import pkg_resources
 import random
 import stat
 import sys
 import time
 
 from terminal_temple.puzzles import *
+from terminal_temple.pizzazz import *
 
 # importlib requires python >=3.1
 import importlib
@@ -104,7 +106,31 @@ def main() :
 
     # create new puzzle location
     if len(args) == 0 :
+        img = image.Image(
+                pkg_resources.resource_filename('terminal_temple','data/head.png')
+        )
+        # python 2v3 issue
+        image.basestring = str
+        img.resize(min(term.width,int(2*term.height*img.size[0]/term.width)))
+
+        special = {
+                '<head.png>':img,
+                '<terminal_temple>':str(text.Text('terminal',shadow=True))+str(text.Text('temple',shadow=True))
+                }
+
         path = get_random_location()
+
+        script_fn = pkg_resources.resource_filename('terminal_temple','data/greeting.txt')
+        with open(script_fn) as f :
+            for line in f :
+                if line.strip() in special :
+                    print('\n')
+                    print(special[line.strip()])
+                    sleep(5)
+                else :
+                    type_text('\n'+eval(line),speed=0.04)
+                    sleep(1)
+
         puz_mas.create(path)
 
     # otherwise we're running a puzzle op

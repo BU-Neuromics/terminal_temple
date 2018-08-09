@@ -1,0 +1,43 @@
+"Hello."
+"We've been expecting you."
+"Not really, I just like saying that."
+"The research shows it builds a sense of suspense."
+bold("And we all trust the research, am I right?")
+"So who am I?"
+"I'm this guy:"
+<head.png>
+"I'm your puzzle steward,"
+"or fun butler,"
+"or doom bringer,"
+"or whatever call me whatever you want, I don't care."
+"Because you just advertently fell into the"
+<terminal_temple>
+"So here's how this works:"
+"1. Look for a new directory in your current directory that has a mysterious/intriguing/dangerous sounding name."
+"Hint: it might be: "+magenta(path)
+"2. In that directory you will find a "+red("CURIOUS DEVICE")+" called "+green("unlock")
+"3. To use the "+red("CURIOUS DEVICE")+", run it as follows:"
+""
+"$ "+green("./unlock")
+""
+"4. It will print out some stuffs at you, the most important of which is a "+yellow("SEEEEECRET CODE")+"."
+"5. Then try to use the "+red("CURIOUS DEVICE")+" like so:"
+""
+"$ "+green("./unlock ")+yellow("<SEEEEECRET CODE> ")+fg256("#999","(Slick color formatting not included, sorry)")
+""
+"6. It will print out some more stuffs at you, and make new options available to you in the current directory."
+"7. In these options, there will be yet more "+red("CURIOUS DEVICES")+" that will pose you with puzzles."
+"These devices are run just like the one in the top level."
+"8. Solve the puzzles, and you will be given more "+yellow("<SEEEEECRET CODES>")+" which you can use to unlock additional puzzles."
+"Capisce?"
+"Fun fact: capisce is the third person singular present tense of the Italian verb capire, 'to understand'."
+"He/she/they understand?"
+"We're woke gender-conscious folk around here. All are welcome in the"
+<terminal_temple>
+"Have fun."
+bold("And don't die.")
+"kbai"
+""
+"Oh, by the way..."
+"If you need a hint in the puzzles, you can pass the word 'hint' to the device to get some help."
+"Maybe.\n"

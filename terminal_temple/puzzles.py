@@ -1,3 +1,31 @@
+# puzzles:
+# 1. must create a file with a specific name that has specific text in it
+# 2. a file is created that has a number between 1 and 100 written out in
+#    words. The user must add a mathematical expression to the file that
+#    evaluates to the value of the named file
+# 3. a file is created that has five lines in it that must be put in a
+#    specific order
+# 4. must match existing words to files with appropriate names
+# 5. the executable in the directory prints output of two files randomly
+#    interleaved between stdout and stderr, the user must separate the
+#    streams into two files with provided names using redirects
+# 6. o noes you lost your kitty! she wandered into this scary directory and
+#    hasn't been seen again but you are going to go *find* her. this is what
+#    she looks like. a directory is created that has a large number of
+#    subdirectories that have files in them named after different animals,
+#    and one of them has the picture of your kitty. the user is told they
+#    need to find their kitty and move her to their house.txt. The unlock
+#    script compares the contents of house.txt to the picture of the kitty
+# 7. the user is told to define specific environment variables that spell
+#    something fun, MADLIBS!
+# 8. A short paragraph has had random words replaced with fruits. This
+#    passage is not about fruits. The user must replace all the fruits with
+#    correct words deduced from context using sed.
+
+### not implemented
+# #. must create five files that are unlocked sequentially by adding specific
+#    file content in order
+
 import base64
 from collections import OrderedDict, defaultdict
 from fabulous.color import bold, green, red, yellow, magenta

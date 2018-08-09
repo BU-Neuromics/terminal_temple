@@ -28,7 +28,7 @@ bold("And we all trust the research, am I right?")
 "6. It will print out some more stuffs at you, and make new options available to you in the current directory."
 "7. In these options, there will be yet more "+red("CURIOUS DEVICES")+" that will pose you with puzzles."
 "These devices are run just like the one in the top level."
-"8. Solve the puzzles, and you will be given more "+yellow("<SEEEEECRET CODES>")+" which you can use to unlock additional puzzles."
+"8. Solve the puzzles, and you will be given more "+yellow("SEEEEECRET CODES")+" which you can use to unlock additional puzzles."
 "Capisce?"
 "Fun fact: capisce is the third person singular present tense of the Italian verb capire, 'to understand'."
 "He/she/they understand?"

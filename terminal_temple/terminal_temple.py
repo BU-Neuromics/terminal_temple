@@ -120,7 +120,6 @@ def main() :
 
         path = get_random_location()
 
-        '''
         script_fn = pkg_resources.resource_filename('terminal_temple','data/greeting.txt')
         with open(script_fn) as f :
             for line in f :
@@ -131,7 +130,6 @@ def main() :
                 else :
                     type_text('\n'+eval(line),speed=0.04)
                     sleep(1)
-        '''
 
         puz_mas.create(path)
 

@@ -8,7 +8,7 @@ greater.
 You can install it with
 
 ```
-pip install terminal_temple
+pip install terminal-temple
 ```
 
 Once installed, the command line commaned `terminal_temple` will be available

@@ -22,14 +22,12 @@
 #    passage is not about fruits. The user must replace all the fruits with
 #    correct words deduced from context using sed.
 
-### not implemented
-# #. must create five files that are unlocked sequentially by adding specific
-#    file content in order
 
 import base64
 from collections import OrderedDict, defaultdict
 from fabulous.color import bold, green, red, yellow, magenta
 import inflect
+from itertools import product
 import getpass
 import hashlib
 import networkx as nx
@@ -43,6 +41,8 @@ import random
 import stat
 import string
 import sys
+
+from .pizzazz import *
 
 # this is how random.py does it
 def str_to_int(a) :
@@ -65,15 +65,14 @@ class PuzzleMaster(object) :
     def unlock(self,key,answer=None) :
 
         # set the seed and generate the list of answers
-        seed = numpy.random.RandomState(str_to_int(getpass.getuser()+key))
-        random.seed(seed)
+        random.seed(key)
         answers = [hex(random.randint(0x10000,0x100000))[2:] for _ in range(len(self.puzzles))]
 
         if answer is not None :
             if answer in answers:
                 index = answers.index(answer)+1
                 if index == len(answers) :
-                    print('Good job u won woo hoo')
+                    dazzle()
                     sys.exit(0)
                 puzzle = list(self.puzzles.values())[index]
                 puzzle = puzzle(key,None,index)
@@ -82,15 +81,27 @@ class PuzzleMaster(object) :
                 print('Thank you explorer! But our answer princess is in another castle!')
 
         opened = []
+        num_unlocked = 0
         for i, (pid, puz) in enumerate(self.puzzles.items()) :
             puzzles = puz.scan(key,i,'.')
             if puzzles :
-                opened_answer = answers[i] if all([_.solved() for _ in puzzles]) else red('LOCKED')
-                opened.append((pid,yellow(answer),opened_answer,puz.scan(key,i,'.')))
+                if all([_.solved() for _ in puzzles]) :
+                    num_unlocked += 1
+                    opened_answer = bold(yellow(answers[i]))
+                else :
+                    opened_answer = red('LOCKED')
+                opened.append((pid,opened_answer))
 
         if len(opened) == 0 :
             unlock(key,key).run()
         else :
+            if num_unlocked == 1 :
+                type_texts(['Yes!','He/she/they can be taught!','\n'])
+            elif num_unlocked == 3 :
+                type_texts(['Hey.',"You're doing great.",'Keep it up.','\n'])
+            elif num_unlocked == 6 :
+                type_texts(['One more and you get a set of steak knives.','\n'])
+
             print('Progress:')
             for puz in opened :
                 print(*puz)
@@ -103,9 +114,7 @@ class Puzzle(object) :
         self.index = index
 
         # set the seed and generate the answer for this puzzle
-        #self.seed = numpy.random.RandomState(str_to_int(getpass.getuser()+self.key))
-        #random.seed(self.seed)
-        random.seed(str_to_int(getpass.getuser()+self.key))
+        random.seed(key)
         self.answer = [hex(random.randint(0x10000,0x100000))[2:] for _ in range(index+1)][-1]
         self.init()
     def init(self,*args):
@@ -257,6 +266,8 @@ class yay_math(Puzzle):
                     *[magenta(_) for _ in '+-*/']
                 )
             )
+    def hint(self):
+        print('Write any non-trivial mathematical expression into the file that is equal to the number written in the filename')
     def solved(self):
         with open(self.fn) as f :
             # remove all white space
@@ -305,6 +316,8 @@ class reorder(Puzzle):
                     print(''.join(('.',' ')[_==' '] for _ in l1))
         if self.solved() :
             print('\nWisdom is only possessed by the learned. Well done.',yellow(self.answer))
+    def hint(self):
+        print('Use a text editor to move the lines of the file around until the full quote appears.')
     def solved(self):
         with open(self.fn,'r') as f :
             lines = f.read().split('\n')
@@ -321,7 +334,8 @@ class match(Puzzle):
             'sandwich.txt':'cheese',
             'house.txt':'kitty',
             'mug.txt':'beer',
-            'vase.txt':'rose' #TODO I was coming up with one more match
+            'vase.txt':'rose',
+            'bonnet.txt':'bee'
         }
         self.herring = random.choice(['jellyfish','wombat','elbow','peanut',
             'sausage','mouse']
@@ -355,7 +369,8 @@ class match(Puzzle):
                         val = red('NOPE')
                 
                 print('  {}: {}'.format(k,val))
-
+    def hint(self):
+        print('Add the correct word as the only text in its corresponding file.')
     def solved(self):
         for k,v in self.pairs.items() :
             with open(os.path.join(self.path,k)) as f :
@@ -373,8 +388,7 @@ class crossed_streams(Puzzle):
         return False
 
 class find_your_pet(Puzzle):
-    def init(self) :
-
+    def setup(self) :
         fn = pkg_resources.resource_filename('terminal_temple','data/animuls.fasta')
         with open(fn,'rt') as f:
             pets = []
@@ -439,10 +453,12 @@ class find_your_pet(Puzzle):
             print(self.dusty_pic)
             print()
             print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(self.pet_name,self.locs[self.root]))
-            print('He/she/they/other preferred pronouns is certainly off on an adventure')
+            print('He/she/they/other preferred pronoun is certainly off on an adventure')
             print('with a very large number of other woke animules. But, surely, your')
             print('beloved {} would like you to go find them and *mv* them back to'.format(self.pet_name))
             print('*home.txt*')
+    def hint(self):
+        print('The file *home.txt* in this directory must have exactly the image of your pet')
     def solved(self):
         if not os.path.exists('home.txt') :
             return False
@@ -467,7 +483,6 @@ class dream(Puzzle):
             if env_val :
                 envs[repl] = env_val
         return envs
-
     def env_repl(self):
         envs = self.get_envs()
         # substitute based on the vars from above
@@ -478,7 +493,7 @@ class dream(Puzzle):
             if repl in envs :
                 crypto_text = crypto_text.replace(repl,envs[repl])
         return crypto_text
-    def run(self):
+    def run(self,*args):
         crypto_text = self.env_repl()
         if self.solved() :
             print(bold(magenta(self.text)))
@@ -493,15 +508,97 @@ class dream(Puzzle):
                     envs_str.append('\n')
             print('  '+'  '.join(envs_str))
             print(red(crypto_text))
+    def hint(self) :
+        print('Define environment variables like, e.g. export S=d, to solve the cryptogram')
     def solved(self) :
         return self.env_repl().lower() == self.text.lower()
 
-class template(Puzzle):
-    def init(self) :
-        pass
-    def run(self,*args) :
-        pass
+class tiles(Puzzle) :
+    def init(self):
+        img_fn = pkg_resources.resource_filename('terminal_temple','data/linux.txt')
+        with open(img_fn) as f :
+            self.img = f.read().strip('\n')
+    def setup(self):
+        # the image has 45 rows and 78 columns
+        # each piece is thus 15 rows by 26 columns for a 3x3
+        img_pieces = defaultdict(list)
+        for i, line in enumerate(self.img.split('\n')) :
+            bin_i = int(i/15)
+            for bin_j in range(3):
+                img_pieces[(bin_i,bin_j)].append(line[bin_j*26:(bin_j+1)*26])
+        # shuffle the values so the bins and pieces are mixed up
+        shuffled_pieces = random.sample(list(img_pieces.values()),len(img_pieces))
+        img_pieces = {k:v for k,v in zip(img_pieces,shuffled_pieces)}
+        # write out the pieces to files
+        for k,pieces in img_pieces.items() :
+            with open(os.path.join(self.path,'{}{}.txt'.format(*k)),'wt') as f :
+                f.write('\n'.join(pieces))
+        # rename one of the files
+        to_rename = list(img_pieces.keys())[0]
+        to_rename_fn = os.path.join(self.path,'{}{}.txt'.format(*to_rename))
+        os.rename(to_rename_fn,to_rename_fn+'_borked')
+    def reassemble(self):
+        # print out the files in a grid
+        pieces = {}
+        for (i,j) in product(range(3),range(3)) :
+            piece_fn = os.path.join(self.path,'{}{}.txt'.format(i,j))
+            if os.path.exists(piece_fn) :
+                with open(piece_fn) as f :
+                    pieces[(i,j)] = f.readlines()
+            else : #missing file
+                pieces[(i,j)] = (
+                        ['.'*26]*4+
+                        ['....Ack! Missing {}!..'.format(piece_fn)]+
+                        ['.'*26]*10
+                       )
+        whole = []
+        for i in range(45) : # 45 rows
+            bin_i = int(i/15)
+            whole.append('')
+            for j in range(3) : # 3 pieces across
+                whole[-1] += pieces[(bin_i,j)][i%15].strip('\n')
+            whole[-1] += '\n'
+
+        return ''.join(whole)
+    def run(self,*args):
+        if self.solved() :
+            print(bold(self.img))
+            print()
+            print('Hold onto your Tux.')
+        else :
+            if len(args) > 0 and args[0] == 'reset' :
+                self.setup()
+            print('Aah! No! The puzzle is all messed up! Gotsta put all the pieces back together in the right order!')
+            print()
+            # print out the files in a grid
+            pieces = {}
+            for (i,j) in product(range(3),range(3)) :
+                piece_fn = os.path.join(self.path,'{}{}.txt'.format(i,j))
+                if os.path.exists(piece_fn) :
+                    with open(piece_fn) as f :
+                        pieces[(i,j)] = f.readlines()
+                else : #missing file
+                    pieces[(i,j)] = (
+                            ['.'*26]*4+
+                            ['..Ack! Missing {}!..'.format(piece_fn)]+
+                            ['.'*26]*10
+                           )
+            whole = []
+            for i in range(45) : # 45 rows
+                bin_i = int(i/15)
+                whole.append('')
+                for j in range(3) : # 3 pieces across
+                    whole[-1] += pieces[(bin_i,j)][i%15].strip('\n')
+                    if j != 3 :
+                        whole[-1] += '|'
+
+                whole[-1] += '\n'
+                if i%15 == 14 and i != 44:
+                    whole.append('-'*26+'+'+'-'*26+'+'+'-'*26+'\n')
+
+            print(''.join(whole))
+
+            print('Note - if you mess up and lose one of the pieces, you can run '+green('./tiles reset')+' to reset it')
+            print()
     def solved(self):
-        return False
-
-
+        return self.img.strip() == self.reassemble().strip()

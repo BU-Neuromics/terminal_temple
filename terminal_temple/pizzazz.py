@@ -55,6 +55,14 @@ def type_text(text,speed=0.03) :
         jitter_speed = speed*((1-variance/2)+random.random()*variance)**2
         sleep(jitter_speed)
 
+def type_texts(texts,speed=0.03,delay=1):
+    for text in texts :
+        sleep(delay)
+        type_text(text,speed=speed)
+        if texts.index(text) != len(texts)-1 :
+            write(' ')
+    sleep(delay)
+
 def banner() :
     voffset = 4
     rect(0,int(term.height/voffset-2),term.width,int(term.height/voffset+26),'#000')
@@ -92,5 +100,3 @@ if __name__ == '__main__' :
         banner()
         sleep(5)
         move(0,term.height)
-
-

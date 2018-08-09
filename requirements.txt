@@ -4,3 +4,4 @@ pillow
 inflect
 setuptools
 networkx
+numpy

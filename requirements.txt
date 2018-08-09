@@ -5,3 +5,4 @@ inflect
 setuptools
 networkx
 numpy
+twine

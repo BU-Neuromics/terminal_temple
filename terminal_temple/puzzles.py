@@ -500,6 +500,11 @@ class dream(Puzzle):
             print('I have a dream.')
             print('It involves the code {}'.format(yellow(self.answer)))
         else :
+            print("\"A society's greatest *export*s, to any *env*ironment, is \n"
+                  "not the goods and products it produces, but its ideas; its \n"
+                  "intellectual and social innovations that change how we think, \n"
+                  "and therefore how we live.\"\n- Some dude or lady probably"
+                  "\n\n")
             envs = self.get_envs()
             envs_str = []
             for i, (repl, v) in enumerate(sorted(envs.items())) :

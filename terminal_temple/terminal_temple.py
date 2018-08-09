@@ -98,8 +98,8 @@ def main() :
         yay_math,
         reorder,
         match,
-        crossed_streams,
-        find_your_pet
+        find_your_pet,
+        tiles,
     ]
     for puz in puzzle_order :
         puz_mas.add(puz)
@@ -120,6 +120,7 @@ def main() :
 
         path = get_random_location()
 
+        '''
         script_fn = pkg_resources.resource_filename('terminal_temple','data/greeting.txt')
         with open(script_fn) as f :
             for line in f :
@@ -130,6 +131,7 @@ def main() :
                 else :
                     type_text('\n'+eval(line),speed=0.04)
                     sleep(1)
+        '''
 
         puz_mas.create(path)
 
@@ -174,10 +176,10 @@ def main() :
                     raise Exception('Error scanning path {} for puzzle {} and key {}, aborting'.format(
                         path,puzzle_name,key
                     ))
-                if len(args['<args>']) > 0 and args['<args>'][0] == 'hint' :
+                if args['<guess>'] == 'hint' :
                     print(puzzle.hint())
                 else :
-                    puzzle.run(*args['<args>'])
+                    puzzle.run(*[args['<guess>']]+args['<args>'])
 
 
 if __name__ == '__main__' :

@@ -73,6 +73,9 @@ class PuzzleMaster(object) :
                 index = answers.index(answer)+1
                 if index == len(answers) :
                     dazzle()
+                    banner()
+                    # set the cursor to the end of the terminal
+                    move(0,term.height)
                     sys.exit(0)
                 puzzle = list(self.puzzles.values())[index]
                 puzzle = puzzle(key,None,index)

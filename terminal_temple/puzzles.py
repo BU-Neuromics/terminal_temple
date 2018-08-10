@@ -207,6 +207,8 @@ class file_puzzle(Puzzle) :
     def run(self,*args) :
         if self.solved() :
             print('Good job. Your next code is',yellow(self.answer))
+            print('You should now return to the parent directory (cd ..) and '
+                  'run '+green('./unlock ')+yellow(self.answer))
         else :
             if not os.path.exists('file.txt') :
                 print('Oops, file.txt is the missing. We\'ll create it again for ya.')

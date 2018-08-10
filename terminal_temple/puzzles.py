@@ -201,11 +201,27 @@ class test_puzzle(Puzzle) :
 
 # 1
 class file_puzzle(Puzzle) :
+    def setup(self) :
+        with open(os.path.join(self.path,'file.txt'),'wt') as f :
+            f.write('')
     def run(self,*args) :
         if self.solved() :
             print('Good job. Your next code is',yellow(self.answer))
         else :
-            print('Gotta put the stuff in the file.txt')
+            if not os.path.exists('file.txt') :
+                print('Oops, file.txt is the missing. We\'ll create it again for ya.')
+                self.setup()
+            else :
+                path = os.path.join(self.path,'file.txt')
+                if os.path.exists(path) :
+                    content = open(path).read().strip()
+                    if content == '' :
+                        print('Gotta put the '+green('stuff')+' in the file.txt')
+                    else :
+                        print('These are not the '+green('stuff')+' you\'re looking for. Try again.')
+
+            print('When you are done, run me again.')
+
     def hint(self):
         return 'Put the text "stuff" into a file named file.txt'
     def solved(self) :

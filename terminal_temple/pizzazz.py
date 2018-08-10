@@ -38,6 +38,8 @@ def random_color() :
 
 def rect(x1,y1,x2,y2,color) :
 
+    term = TerminalInfo()
+
     positions = list(
             product(
                 range(max(0,x1),min(x2,term.width)),
@@ -64,6 +66,9 @@ def type_texts(texts,speed=0.03,delay=1):
     sleep(delay)
 
 def banner() :
+
+    term = TerminalInfo()
+
     voffset = 4
     rect(0,int(term.height/voffset-2),term.width,int(term.height/voffset+26),'#000')
     move(0,int(term.height/voffset))
@@ -72,6 +77,9 @@ def banner() :
     write(text.Text('  temple',skew=5,shadow=True))
 
 def dazzle() :
+
+    term = TerminalInfo()
+
     positions = list(product(range(term.width),range(term.height)))
     random.shuffle(positions)
     for x,y in positions :

@@ -1,0 +1,10 @@
+# CHANGELOG
+
+## [0.1.2]
+### Changed
+* added more instructions to file_puzzle
+* added term definition to banner and dazzle
+* added banner and cursor reset
+
+## [0.1.1]
+* initial release

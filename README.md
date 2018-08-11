@@ -5,6 +5,19 @@ This is a slightly less cute little set of puzzles that develops slightly more
 advanced command line skills than terminal_quest. It requires python 3.6 or
 greater.
 
+**Note:** to complete these puzzles, you should have a firm grasp of these
+shell commands:
+
+* *cd*
+* *mv*
+* *cat*
+* *find*
+* *echo*
+* *export* and environment variables
+
+A command line text editor might be helpful as well.
+
+
 You can install it with
 
 ```

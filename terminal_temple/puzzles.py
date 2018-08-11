@@ -409,7 +409,7 @@ class crossed_streams(Puzzle):
         return False
 
 class find_your_pet(Puzzle):
-    def setup(self) :
+    def init(self) :
         fn = pkg_resources.resource_filename('terminal_temple','data/animuls.fasta')
         with open(fn,'rt') as f:
             pets = []
@@ -424,27 +424,8 @@ class find_your_pet(Puzzle):
         self.pets = pets
         fn = pkg_resources.resource_filename('terminal_temple','data/locations.txt')
         with open(fn,'rt') as f :
-            locs = [_.strip() for _ in f.readlines()]
-        # let's say on average 3 animuls per location?
-        num_locs = int(len(pets)/3)
-        pet_locs = random.choices(range(num_locs),k=len(pets))
-        self.locs = locs = random.choices(locs,k=num_locs)
-        path_tree = nx.random_tree(num_locs,seed=str_to_int(getpass.getuser()+self.key))
-        # create directories and put pets in them based on tree
-        self.root = random.choice(range(num_locs))
-        path_tree = dfs_tree(path_tree,self.root)
-        for node in path_tree.nodes :
-            path = nx.shortest_path(path_tree,source=self.root,target=node)
-            # create the directory if necessary
-            p = pathlib.Path(*[locs[_] for _ in path])
-            p.mkdir(exist_ok=True)
-            # create text files with the pets in them based on the path leaf
-            leaf = path[-1]
-            leaf_pet_locs = [i for i,x in enumerate(pet_locs) if x==leaf]
-            for leaf_pet in leaf_pet_locs :
-                pet_name, pet_art = pets[leaf_pet]
-                with open(p.joinpath('{}.txt'.format(pet_name)),'wt') as f :
-                    f.write(pet_art)
+            self.locs = [_.strip() for _ in f.readlines()]
+
         self.pet_id = random.choice(range(len(pets)))
         self.pet_name, self.pet_pic = self.pets[self.pet_id]
 
@@ -455,29 +436,58 @@ class find_your_pet(Puzzle):
             else :
                 self.dusty_pic += self.pet_pic[i]
 
+        # let's say on average 3 animuls per location?
+        num_locs = int(len(self.pets)/3)
+        self.pet_locs = random.choices(range(num_locs),k=len(self.pets))
+        locs = random.choices(self.locs,k=num_locs)
+        path_tree = nx.random_tree(num_locs,seed=str_to_int(getpass.getuser()+self.key))
+        # pick a random root and build a directed tree from it
+        self.root = random.choice(range(num_locs))
+        self.path_tree = dfs_tree(path_tree,self.root)
+
+    def setup(self) :
+        # create directories and put pets in them based on tree
+        for node in self.path_tree.nodes :
+            path = nx.shortest_path(self.path_tree,source=self.root,target=node)
+            # create the directory if necessary
+            p = pathlib.Path(*[self.locs[_] for _ in path])
+            p.mkdir(exist_ok=True)
+            # create text files with the pets in them based on the path leaf
+            leaf = path[-1]
+            leaf_pet_locs = [i for i,x in enumerate(self.pet_locs) if x==leaf]
+            for leaf_pet in leaf_pet_locs :
+                pet_name, pet_art = self.pets[leaf_pet]
+                with open(p.joinpath('{}.txt'.format(pet_name)),'wt') as f :
+                    f.write(pet_art)
+
     def run(self,*args):
         if self.solved() :
             print('You found your pet {}!'.format(self.pet_name))
             print('With gratitude, he/she/they give you the next code: {}'.format(yellow(self.answer)))
         else :
+
+            if len(args) > 0 and args[0] == 'reset' :
+                self.setup()
             if os.path.exists('home.txt') :
                 with open('home.txt') as f :
                     home = f.read().strip()
                 if home == self.dusty_pic.strip() :
                     print("Wait, that's not your pet! It looks exactly like that dusty old")
                     print("picture you are using to search for him/her/them. You'll have to")
-                    print("just get out there and find that ****ing {}!".format(self.pet_name))
+                    print("just get out there and find that ****ing {}!".format(magenta(self.pet_name)))
                 else :
-                    print("Noooooo, that doesn't look like your beloved {}, keep searching!".format(self.pet_name))
+                    print("Noooooo, that doesn't look like your beloved {}, keep searching!".format(magenta(self.pet_name)))
 
             print(bold(red('LOST:')))
             print(self.dusty_pic)
             print()
-            print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(self.pet_name,self.locs[self.root]))
+            print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(magenta(self.pet_name),red(self.locs[self.root])))
             print('He/she/they/other preferred pronoun is certainly off on an adventure')
             print('with a very large number of other woke animules. But, surely, your')
-            print('beloved {} would like you to go find them and *mv* them back to'.format(self.pet_name))
+            print('beloved {} would like you to go find them and *mv* them back to'.format(magenta(self.pet_name)))
             print('*home.txt*')
+
+            print('Note - if you mess up and create a pet \'orrorshow, you can run '+green('./find_your_pet reset')+' to reset it')
     def hint(self):
         print('The file *home.txt* in this directory must have exactly the image of your pet')
     def solved(self):

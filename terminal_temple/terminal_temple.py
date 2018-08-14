@@ -115,7 +115,10 @@ def main() :
 
         special = {
                 '<head.png>':img,
-                '<terminal_temple>':str(text.Text('terminal',shadow=True))+str(text.Text('temple',shadow=True))
+                '<terminal_temple>':(
+                    str(text.Text('terminal',color=banner_color,skew=5,shadow=True))+
+                    str(text.Text('temple',color=banner_color,skew=5,shadow=True))
+                    )
                 }
 
         path = get_random_location()

@@ -65,6 +65,7 @@ def type_texts(texts,speed=0.03,delay=1):
             write(' ')
     sleep(delay)
 
+banner_color = '#786d5f'
 def banner() :
 
     term = TerminalInfo()
@@ -72,9 +73,9 @@ def banner() :
     voffset = 4
     rect(0,int(term.height/voffset-2),term.width,int(term.height/voffset+26),'#000')
     move(0,int(term.height/voffset))
-    write(text.Text(' terminal',skew=5,shadow=True))
+    write(text.Text(' terminal',skew=5,shadow=True,color=banner_color))
     move(0,int(term.height/voffset+12))
-    write(text.Text('  temple',skew=5,shadow=True))
+    write(text.Text('  temple',skew=5,shadow=True,color=banner_color))
 
 def dazzle() :
 

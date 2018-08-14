@@ -38,6 +38,7 @@ import os
 import pathlib
 import pkg_resources
 import random
+import shutil
 import stat
 import string
 import sys
@@ -51,6 +52,51 @@ def str_to_int(a) :
     a = int.from_bytes(a, 'big')
     a = a%(2**32-1)
     return a
+
+
+#https://stackoverflow.com/questions/2490334/simple-way-to-encode-a-string-according-to-a-password
+import base64
+def encode(key, clear):
+    enc = []
+    for i in range(len(clear)):
+        key_c = key[i % len(key)]
+        enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
+        enc.append(enc_c)
+    return base64.urlsafe_b64encode("".join(enc).encode()).decode()
+
+def decode(key, enc):
+    dec = []
+    enc = base64.urlsafe_b64decode(enc).decode()
+    for i in range(len(enc)):
+        key_c = key[i % len(key)]
+        dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+        dec.append(dec_c)
+    return "".join(dec)
+
+def load_state(fn,key) :
+    '''Loads the characters between the save cursor and load cursor ANSI codes
+    returns the decode()'ed state stored between those characters, or None if
+    the start or stop characters could not be found'''
+    with open(fn) as f :
+        state = f.read()
+
+    # state is hidden between save cursor and load cursor ansi chars
+    try :
+        state_start = state.index('\033[s')
+        state_end = state.index('\033[u')
+        state = state[state_start+1:state_end]
+        return eval(decode(key,state))
+    except ValueError :
+        # the state could not be successfully decoded, fail
+        return None
+
+def save_state(state,fn,key,decoy_text='') :
+    with open(fn,'wt') as f :
+        encoded = encode(key,repr(state))
+        f.write('\033[s')
+        f.write(encoded)
+        f.write('\033[u')
+        f.write(decoy_text)
 
 class PuzzleMaster(object) :
     def __init__(self) :
@@ -68,7 +114,33 @@ class PuzzleMaster(object) :
         random.seed(key)
         answers = [hex(random.randint(0x10000,0x100000))[2:] for _ in range(len(self.puzzles))]
 
+        # load shadowy figure
+        shadowy_figure = os.path.realpath('.shadowy_figure')
+        if os.path.exists(shadowy_figure) :
+            state = load_state(shadowy_figure,key)
+            if state is None : # they messed with the reaper
+                print(bold(red('You should have feared the reaper, but you'
+                    'messed with him/her/them, and now you will pay the '
+                    'ultimate, some might even say terminal, price.')))
+                # reset all puzzles
+                for puz in self.puzzles :
+                    if os.path.exists(puz.name) :
+                        shutil.rmtree(puz.name)
+                os.remove(shadowy_figure)
+        else : 
+            state = {}
+
         if answer is not None :
+            if answer == answers[0] : # first unlock
+
+                # create shadowy figure
+                fn = pkg_resources.resource_filename('terminal_temple','data/reaper.fasta')
+                with open(fn,'rt') as f:
+                    reaper = f.read()
+                save_state(state,shadowy_figure,key,reaper)
+
+            # TODO I was adding logic to unlock all puzzles at once,
+            # and recording whether they are solved in state
             if answer in answers:
                 index = answers.index(answer)+1
                 if index == len(answers) :

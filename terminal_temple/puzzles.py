@@ -84,9 +84,11 @@ def load_state(fn,key) :
     try :
         state_start = state.index('\033[s')
         state_end = state.index('\033[u')
-        state = state[state_start+1:state_end]
+        state = state[state_start+3:state_end]
+        print(state)
         return eval(decode(key,state))
-    except ValueError :
+    except ValueError as e :
+        raise e
         # the state could not be successfully decoded, fail
         return None
 
@@ -134,7 +136,7 @@ class PuzzleMaster(object) :
             if answer == answers[0] : # first unlock
 
                 # create shadowy figure
-                fn = pkg_resources.resource_filename('terminal_temple','data/reaper.fasta')
+                fn = pkg_resources.resource_filename('terminal_temple','data/reaper.txt')
                 with open(fn,'rt') as f:
                     reaper = f.read()
                 save_state(state,shadowy_figure,key,reaper)
@@ -503,7 +505,8 @@ class find_your_pet(Puzzle):
 
         self.dusty_pic = ''
         for i in range(len(self.pet_pic)) :
-            if random.random() < 12/len(self.pet_pic) :
+
+            if random.random() < 0.1 and self.pet_pic[i] != '\n':
                 self.dusty_pic += '.'
             else :
                 self.dusty_pic += self.pet_pic[i]
@@ -538,28 +541,45 @@ class find_your_pet(Puzzle):
             print('With gratitude, he/she/they give you the next code: {}'.format(yellow(self.answer)))
         else :
 
-            if len(args) > 0 and args[0] == 'reset' :
-                self.setup()
             if os.path.exists('home.txt') :
+
                 with open('home.txt') as f :
                     home = f.read().strip()
                 if home == self.dusty_pic.strip() :
                     print("Wait, that's not your pet! It looks exactly like that dusty old")
                     print("picture you are using to search for him/her/them. You'll have to")
-                    print("just get out there and find that ****ing {}!".format(magenta(self.pet_name)))
+                    print("just get out there and find that {}!".format(magenta(self.pet_name)))
                 else :
                     print("Noooooo, that doesn't look like your beloved {}, keep searching!".format(magenta(self.pet_name)))
 
-            print(bold(red('LOST:')))
-            print(self.dusty_pic)
-            print()
-            print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(magenta(self.pet_name),red(self.locs[self.root])))
-            print('He/she/they/other preferred pronoun is certainly off on an adventure')
-            print('with a very large number of other woke animules. But, surely, your')
-            print('beloved {} would like you to go find them and *mv* them back to'.format(magenta(self.pet_name)))
-            print('*home.txt*')
+            else :
 
-            print('Note - if you mess up and create a pet \'orrorshow, you can run '+green('./find_your_pet reset')+' to reset it')
+                # reset
+                if args[0] == 'reset' :
+                    # remove home.txt
+                    if os.path.exists('home.txt') :
+                        os.remove('home.txt')
+                    # remove the root
+                    if os.path.exists(self.root) :
+                        shutil.rmtree(self.root)
+
+                    print(bold(yellow('RESET!')))
+                    print()
+
+                print(bold(red('LOST:')))
+                print(self.dusty_pic)
+                print()
+                print('O noes! Your favoritest pet {} has wandered off into a nearby {}!'.format(magenta(self.pet_name),red(self.locs[self.root])))
+                print('He/she/they/other preferred pronoun is certainly off on an adventure')
+                print('with a very large number of other woke animules. But, surely, your')
+                print('beloved {} would like you to go find them and *mv* them back to'.format(magenta(self.pet_name)))
+                print('*home.txt*')
+
+                print('Note - if you mess up and create a pet \'orrorshow, you can run '+green('./find_your_pet reset')+' to reset it')
+
+                self.setup()
+
+
     def hint(self):
         print('The file *home.txt* in this directory must have exactly the image of your pet')
     def solved(self):

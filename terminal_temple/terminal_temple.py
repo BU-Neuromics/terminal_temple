@@ -123,16 +123,21 @@ def main() :
 
         path = get_random_location()
 
-        script_fn = pkg_resources.resource_filename('terminal_temple','data/greeting.txt')
-        with open(script_fn) as f :
-            for line in f :
-                if line.strip() in special :
-                    print('\n')
-                    print(special[line.strip()])
-                    sleep(5)
-                else :
-                    type_text('\n'+eval(line),speed=0.04)
-                    sleep(1)
+        try :
+
+            script_fn = pkg_resources.resource_filename('terminal_temple','data/greeting.txt')
+            with open(script_fn) as f :
+                for line in f :
+                    if line.strip() in special :
+                        print('\n')
+                        print(special[line.strip()])
+                        sleep(5)
+                    else :
+                        type_text('\n'+eval(line),speed=0.04)
+                        sleep(1)
+
+        except KeyboardInterrupt as e :
+            type_text('\nOk ok fine impatient pants here\'s your puzzle directory geez: '+magenta(path)+'\n')
 
         puz_mas.create(path)
 

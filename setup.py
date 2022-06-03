@@ -2,10 +2,18 @@
 
 from setuptools import setup, find_packages
 
+with open('VERSION', 'r', encoding='utf-8') as f :
+    version = f.read()
+
+with open('README.md', 'r', encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(name='terminal-temple'
-      ,url='https://bitbucket.org/bubioinformaticshub/terminal_temple/'
-      ,version=open('VERSION').read().strip()
+      ,url='https://github.com/BU-Neuromics/terminal_temple'
+      ,version=version
       ,description='Another cute little puzzle for teaching basic-to-intermediate command line usage'
+      ,long_description=long_description
+      ,long_description_content_type="text/markdown"
       ,author='Adam Labadorf'
       ,author_email='labadorf@bu.edu'
       ,license='MIT'

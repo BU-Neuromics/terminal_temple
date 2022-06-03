@@ -2,3 +2,4 @@
 build
 dist
 *.egg-info
+twine_creds.sh

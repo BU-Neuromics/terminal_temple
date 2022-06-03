@@ -41,7 +41,9 @@ import random
 import shutil
 import stat
 import string
+import subprocess
 import sys
+import textwrap
 
 from .pizzazz import *
 
@@ -594,30 +596,39 @@ class dream(Puzzle):
         # read in the quote
         fn = pkg_resources.resource_filename('terminal_temple','data/mlk.txt')
         with open(fn,'rt') as f :
-            self.text = f.read()
-        chars = sorted(list(set(self.text.lower()).intersection(string.ascii_lowercase)))
+            self.text = f.read().upper()
+
+        # create a random character mapping
+        chars = string.ascii_uppercase
         repl_chars = random.sample(string.ascii_uppercase,len(chars))
-        self.crypto_map = {k:l for l,k in zip(chars,repl_chars)}
+        self.crypto_map = {ord(k):ord(l) for l,k in zip(chars,repl_chars)}
+
+        # shuffle the crypto text
+        self.crypto_text = self.text.translate(self.crypto_map)
+
     def get_envs(self):
         # print out any current env vars defined
-        envs = {}
-        for repl in self.crypto_map :
+        envs = {k:k for k in string.ascii_uppercase}
+        for repl in envs :
             env_val = os.environ.get(repl)
-            if env_val :
+            if env_val and env_val != '' and env_val != repl :
                 envs[repl] = env_val
         return envs
+
     def env_repl(self):
         envs = self.get_envs()
-        # substitute based on the vars from above
-        crypto_text = self.text.lower()
-        for repl, char in self.crypto_map.items() :
-            crypto_text = crypto_text.replace(char,repl)
-            # now substitue back
-            if repl in envs :
-                crypto_text = crypto_text.replace(repl,envs[repl])
-        return crypto_text
+        return self.crypto_text.translate(envs)
+
     def run(self,*args):
-        crypto_text = self.env_repl()
+
+        if args[0] == 'reset' :
+            for c in string.ascii_uppercase :
+                try :
+                    os.environ[c] = c
+                except Exception as e :
+                    pass
+            print(bold(white('POOF!')))
+
         if self.solved() :
             print(bold(magenta(self.text)))
             print('I have a dream.')
@@ -631,13 +642,19 @@ class dream(Puzzle):
             envs = self.get_envs()
             envs_str = []
             for i, (repl, v) in enumerate(sorted(envs.items())) :
-                envs_str.append('{}={}'.format(repl,v))
-                if i%5 == 4 :
-                    envs_str.append('\n')
-            print('  '+'  '.join(envs_str))
-            print(red(crypto_text))
+                if repl != v :
+                    envs_str.append('{}={}'.format(repl,v))
+            print('\n'.join(textwrap.wrap('  '.join(envs_str))))
+            envs_tr = {ord(k):ord(v) for k,v in envs.items()}
+            crypto_text = self.crypto_text.translate(envs_tr)
+            for t, c_orig, c_sub in zip(self.text, self.crypto_text, crypto_text) :
+                if t == c_sub :
+                    print(white(t),end='')
+                else :
+                    print(red(c_orig),end='')
     def hint(self) :
-        print('Define environment variables like, e.g. export S=d, to solve the cryptogram')
+        print('Define environment variables like, e.g. export S=D, to solve the cryptogram')
+        print('If you want to reset all your mappings, run '+bold(white('unset {A..Z}')))
     def solved(self) :
         return self.env_repl().lower() == self.text.lower()
 
